@@ -505,7 +505,10 @@ function makeOpenUniformKnots(nPts, d) {
 
 function updateKnotsAndBasis() {
     // 1) rebuild the plain-number knot vector
-    knot_vectors = makeOpenUniformKnots(thePoints.length, order);
+    if (num_points !== thePoints.length) {
+        knot_vectors = makeOpenUniformKnots(thePoints.length, order);
+        num_points = thePoints.length;
+    }
     console.log("knot_vectors", knot_vectors);
 
     // 2) convert to Rationals
@@ -613,6 +616,7 @@ let thePoints = [
     [450, 450],
     [450, 150]
 ];
+let num_points = thePoints.length;
 // let knot_vectors = [0, 1, 2, 3, 4, 5];
 let knot_vectors = [0, 0, 1, 2, 3, 3];
 // let knot_vectors = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -636,6 +640,7 @@ console.log(Number(slider.value));
 degree = Number(slider.value);
 order = degree + 1;
 thePoints = makeDefaultControlPoints(order)
+num_points = thePoints.length;
 knot_vectors = makeOpenUniformKnots(thePoints.length, order);
 U = knot_vectors.map(toRational);
 Bs = calc_BlendingFunction(U, order);
@@ -656,23 +661,26 @@ draggablePoints(canvas, thePoints, () => {
 
 slider.onchange = function() {
     // whenever the user moves the slider…
-    degree = Number(slider.value);
-    order = degree + 1;
-    thePoints = makeDefaultControlPoints(order);
-    knot_vectors = makeOpenUniformKnots(thePoints.length, order);
-    console.log("knot_vectors", knot_vectors);
-    U = knot_vectors.map(toRational);
-    Bs = calc_BlendingFunction(U, order);
-    uMin = U[order - 1].valueOf();
-    uMax = U[U.length - order].valueOf();
-    wrapDraw();
-    renderKnotUI();
-    draggablePoints(canvas, thePoints, () => {
-        // whenever the user adds or drags a point…
-        updateKnotsAndBasis();
+    if (degree !== Number(slider.value)) {
+        degree = Number(slider.value);
+        order = degree + 1;
+        thePoints = makeDefaultControlPoints(order);
+        knot_vectors = makeOpenUniformKnots(thePoints.length, order);
+        console.log("knot_vectors", knot_vectors);
+        U = knot_vectors.map(toRational);
+        Bs = calc_BlendingFunction(U, order);
+        uMin = U[order - 1].valueOf();
+        uMax = U[U.length - order].valueOf();
         wrapDraw();
-        setNumPoints();
-    }, 10, setNumPoints);
+        renderKnotUI();
+        draggablePoints(canvas, thePoints, () => {
+            // whenever the user adds or drags a point…
+            updateKnotsAndBasis();
+            console.log("peter!")
+            wrapDraw();
+            setNumPoints();
+        }, 10, setNumPoints);
+    }
 }
 
 // let slider = runcanvas.range;
