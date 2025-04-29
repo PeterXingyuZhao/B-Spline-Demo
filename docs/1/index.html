@@ -1,55 +1,29 @@
 <!DOCTYPE html>
 <html>
-    
-<!-- CS559 Workbook Pages - page content &copy; 2021, Michael Gleicher -->
-<!-- This page is part of a Workbook developed for the 
-    CS559 Computer Graphics Class at the University of Wisconsin
-    https://graphics.cs.wisc.edu/Courses/559-sp2025/ -->
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="../../css/workbook.css">
-        <script src="../../js/resizeIFrames.js"></script>
-    </head>
-    <body>
-        <div class="container container--outer"><div class="maincolumn">
-<main class="main" role="main">
-	<article class="post">
-		<header class="post__header"><h1 class="post__title">Page 1: Empty Page 1</h1>
-		</header>
-        
-        
-        
-		<div class="content post__content clearfix"><p>Here is a simple empty Three thing:</p>
-<div id="div1"></div>
-<script type="importmap">
-    {
-        "imports": {
-            "three": "../libs/CS559-Three/build/three.module.js"
-        }
-    }
+  <head>
+    <link rel="stylesheet" href="../../libs/CS559/style559.css" />
+    <!-- configure MathJax to use $…$ for inline TeX -->
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+      };
     </script>
-<script src="./1.js" type="module" defer></script>
-<p><a href="../../docs/2/" class="Next__Page">Next: Empty Page 2 </a></p>
+    <!-- load MathJax -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+      id="MathJax-script"
+      async
+    ></script>
+  </head>
 
-            
-			
-		</div>
-	</article>
-</main>
+  <body>
+    <canvas id="canvas1" height="600px" width="600px"></canvas>
+    <!-- somewhere above or beside your canvas -->
+    <div id="knot-vector-display" style="margin: .5em 0; font-family: monospace;"></div>
+    <div id="knot-inputs" style="display: flex; gap: .5em; flex-wrap: wrap;"></div>
 
-                </div>
-                    <div class="sidebar">
-<h2 class="Side_Title">Portfolio 4: Make Your Own Portfolio</h2>
-<p class="Side__Note">Pages:</p>
-<ul class="Side__List">
-    <li class="Side__Item Side__Unselected"><a href="../../">Index (Portfolio 4: Make your own)</a></li>
-        <li class="Side__Item Side__Selected"> 1: Empty Page 1 </li>
-        <li class="Side__Item Side__Unselected"> <a href="../../docs/2/">2: Empty Page 2 </a></li>
-        <li class="Side__Item Side__Unselected"> <a href="../../docs/3/">3: Empty Page 3 </a></li>
-        <li class="Side__Item Side__Unselected"> <a href="../../docs/4/">4: Empty Page 4 </a></li>
-        <li class="Side__Item Side__Unselected"> <a href="../../docs/5/">5: Empty Page 5 </a></li>
-</ul>
-</div>
-</div>
-    </body>
+    <script src="1.js" type="module" defer></script>
+    <div id="blend-formulas"></div>
+  </body>
 </html>
+

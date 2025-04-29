@@ -55,7 +55,7 @@ export class RunCanvas {
     this.noloop = noLoop;
 
     // some style parameters
-    this.digits = 2;
+    this.digits = 0;
 
     // keep track of time - so we can measure step times
     this.lastTime = undefined;
@@ -89,7 +89,8 @@ export class RunCanvas {
     this.br2.id = canvasName + "-br2";
 
     insertAfter(this.br, this.canvas);
-    insertAfter(this.runbutton, this.br);
+    // insertAfter(this.runbutton, this.br);
+    insertAfter(this.text, this.br);
     insertAfter(this.text, this.runbutton);
     insertAfter(this.range, this.text);
     insertAfter(this.br2, this.range);
