@@ -391,6 +391,14 @@ function piecewiseWithPlots(Bs, d) {
   
       // formula wrapper
       const mathDiv = document.createElement("div");
+      if (degree <= 6) {
+        mathDiv.style.minWidth = "600px";
+        mathDiv.style.maxWidth = "600px";
+      } else {
+        mathDiv.style.minWidth = "1000px";
+        mathDiv.style.maxWidth = "1000px";
+      }
+
       mathDiv.innerHTML = tex;
       row.appendChild(mathDiv);
   
@@ -715,7 +723,7 @@ function updateKnotsAndBasis() {
         slider2.value = uMin;
         slider2.step  = (uMax - uMin) / 200;
         highlightU = parseFloat(slider2.value);
-        uDisplay.textContent = highlightU.toFixed(2);
+        uDisplay.value = highlightU.toFixed(2);
     }
 
     // 2) convert to Rationals
@@ -738,7 +746,10 @@ function updateKnotsAndBasis() {
 function makeDefaultControlPoints(n) {
     let points = [];
     for (let i = 1; i <= n; i++) {
-        points.push([50 + 500 / (n - 1) * (i - 1), 300 + (-1)**i * 100]);
+        let l1 = 50;
+        let l2 = canvas.width - 100;
+        let h = canvas.height / 2;
+        points.push([l1 + l2 / (n - 1) * (i - 1), h + (-1)**i * 100]);
     }
     return points;
 }
@@ -754,7 +765,7 @@ function renderKnotUI() {
     display.textContent = "Knot vector U = [" + knot_vectors.join(", ") + "]";
     
     // clear out old inputs
-    inputs.innerHTML = "";
+    inputs.innerHTML = "Specify my own knot vector (non-decreasing):";
     // for each knot, make a number‐input
     knot_vectors.forEach((u,i) => {
       const inp = document.createElement("input");
@@ -764,6 +775,7 @@ function renderKnotUI() {
       inp.size    = 4;
       inp.title   = `U[${i}]`;
       inp.dataset.idx = i;
+      inp.style = "text-align: center;"
       // when user types a new value:
       inp.addEventListener("change", onUserKnotChange);
       inputs.appendChild(inp);
@@ -788,7 +800,7 @@ function onUserKnotChange(evt) {
     slider2.value = uMin;
     slider2.step  = (uMax - uMin) / 200;
     highlightU = parseFloat(slider2.value);
-    uDisplay.textContent = highlightU.toFixed(2);
+    uDisplay.value = highlightU.toFixed(2);
     piecewiseWithPlots(Bs, order);
     wrapDraw();
     // update the textual display, in case you want it live
@@ -855,6 +867,8 @@ let highlightU = 0;           // current slider value
 let highlightUEnabled = false; // checkbox state
 let highlightCPandBFEnabled = false; // checkbox state, whether to highlight control points and blending functions
 // grab the DOM nodes
+const slider = document.getElementById("degree-slider");
+const degreeDisplay = document.getElementById("degree-value");
 const slider2 = document.getElementById("u-slider");
 const uDisplay = document.getElementById("u-value");
 const toggle1 = document.getElementById("highlight-toggle");
@@ -863,7 +877,7 @@ const toggle2 = document.getElementById("highlight-effective-toggle");
 // whenever the slider moves…
 slider2.addEventListener("input", () => {
   highlightU = parseFloat(slider2.value);
-  uDisplay.textContent = highlightU.toFixed(2);
+  uDisplay.value = highlightU.toFixed(2);
   wrapDraw();
   updateKnotsAndBasis();
 });
@@ -899,7 +913,7 @@ runcanvas.digits = 0;
 
 
 
-let slider = runcanvas.range;
+// let slider = runcanvas.range;
 degree = Number(slider.value);
 order = degree + 1;
 thePoints = makeDefaultControlPoints(order)
@@ -916,7 +930,7 @@ slider2.max   = uMax;
 slider2.value = uMin;
 slider2.step  = (uMax - uMin) / 200;
 highlightU = parseFloat(slider2.value);
-uDisplay.textContent = highlightU.toFixed(2);
+uDisplay.value = highlightU.toFixed(2);
 wrapDraw();
 renderKnotUI();
 
@@ -928,9 +942,17 @@ draggablePoints(canvas, thePoints, () => {
     setNumPoints();
 }, 10, setNumPoints);
 
+slider.oninput = function() {
+    degree = Number(slider.value);
+    degreeDisplay.value = degree;
+}
+
+let prevDegree = degree;
 slider.onchange = function() {
     // whenever the user moves the slider to change the degree of the B-spline…
-    if (degree !== Number(slider.value)) {
+    if (prevDegree !== Number(slider.value)) {
+        prevDegree = Number(slider.value);
+        degreeDisplay.value = degree;
         degree = Number(slider.value);
         order = degree + 1;
         thePoints = makeDefaultControlPoints(order);
@@ -944,7 +966,7 @@ slider.onchange = function() {
         slider2.value = uMin;
         slider2.step  = (uMax - uMin) / 200;
         highlightU = parseFloat(slider2.value);
-        uDisplay.textContent = highlightU.toFixed(2);
+        uDisplay.value = highlightU.toFixed(2);
         updateKnotsAndBasis();
         wrapDraw();
         renderKnotUI();

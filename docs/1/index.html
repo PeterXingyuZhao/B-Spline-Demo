@@ -14,47 +14,110 @@
       id="MathJax-script"
       async
     ></script>
+    <style>
+      #knot-inputs input[type=number] {
+        width: 6ch;
+        padding: 0.2em;
+      }
+      /* make the outer container a row */
+      #main {
+      display: flex;
+      flex-direction: row-reverse; /* ← swap the order */
+      align-items: flex-start;
+      gap: 1em;
+    }
+
+      .sidebar {
+        flex: 0 0 200px;          /* fixed 200px sidebar */
+        /* or use flex: 1; for a fluid width */
+      }
+      #canvasAndControls {
+        flex: 1;                  /* take up remaining space */
+      }
+    </style>    
   </head>
 
-  <body>
-    <canvas id="canvas1" height="600px" width="600px"></canvas>
-    <!-- somewhere above or beside your canvas -->
-    <div id="controls" style="margin-bottom:1em;">
-      <label for="u-slider">u = </label>
-      <input
-        type="range"
-        id="u-slider"
-        min="0"
-        max="1"
-        step="0.01"
-        value="0"
-        style="width: 400px"
-      />
-      <span id="u-value">0.00</span>
-    
-      <label style="margin-left:1em;">
-        <input type="checkbox" id="highlight-toggle" />
-        Highlight the specified u in the graph
-        <input type="checkbox" id="highlight-effective-toggle" />
-        Highlight the effective control points and blending functions
-      </label>
+  <div id="main">
+    <div class="sidebar">
+      <h2 class="Side_Title">Portfolio 4: <br/>B-Spline Demo</h2>
+      <p class="Side__Note">Pages:</p>
+      <ul class="Side__List">
+        <li class="Side__Item Side__Unselected"><a href="../../">Index</a></li>
+        <li class="Side__Item Side__Selected">1: B-Spline Demo</li>
+      </ul>
     </div>
-    <!-- <label for="u-input">Highlight u:</label>
-<input
-  type="number"
-  id="u-input"
-  step="any"
-  min="0"
-  max="1"
-  value="0"
-/>
-<button id="u-update">Go</button> -->
 
-    <div id="knot-vector-display" style="margin: .5em 0; font-family: monospace;"></div>
-    <div id="knot-inputs" style="display: flex; gap: .5em; flex-wrap: wrap;"></div>
+    <div id="canvasAndControls">
+      <canvas id="canvas1" height="600" width="1000"></canvas>
 
-    <script src="1.js" type="module" defer></script>
-    <div id="blend-formulas"></div>
-  </body>
+      <div id = "degreeControls" style="margin-bottom:1em;">
+        <label for="degree-slider">degree = </label>
+        <input
+          type="text"
+          id="degree-value"
+          value="1"
+          readonly
+          style="width: 3em; text-align: center;"
+        />
+        <input
+          type="range"
+          id="degree-slider"
+          min="1"
+          max="10"
+          step="1"
+          value="1"
+          style="width: 400px"
+        />
+        This is the degree of the B-spline, i.e. the degree of the polynomial blending functions used.
+       </div>
+      <div id="highlightControls" style="margin-bottom:1em;">
+        <label for="u-slider">u = </label>
+        <!-- <span id="u-value">0.00</span> -->
+        <input
+          type="text"
+          id="u-value"
+          value="0.00"
+          readonly
+          style="width: 3em; text-align: center;"
+        />
+        <input
+          type="range"
+          id="u-slider"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          style="width: 400px"
+        />
+        
+      
+        <label style="margin-left:1em;">
+          <input type="checkbox" id="highlight-toggle" />
+          Highlight the specified u in the graph
+          <input type="checkbox" id="highlight-effective-toggle" />
+          Highlight the effective control points and blending functions
+        </label>
+      </div>
+      <!-- <label for="u-input">Highlight u:</label>
+  <input
+    type="number"
+    id="u-input"
+    step="any"
+    min="0"
+    max="1"
+    value="0"
+  />
+  <button id="u-update">Go</button> -->
+  
+      <div id="knot-vector-display" style="margin: .5em 0; font-family: monospace;"></div>
+      <div id="knot-inputs" style="display: flex; gap: .5em; flex-wrap: wrap;"></div>
+      <br />
+      <script src="1.js" type="module" defer></script>
+      <div id="blend-formulas"></div>
+    </div>
+  </div>
+
+  <script src="1.js" type="module"></script>
+</body>
 </html>
 
