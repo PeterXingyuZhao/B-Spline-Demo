@@ -512,6 +512,10 @@ function piecewiseWithPlots(Bs, d) {
 
       
           // --- 3. draw the blending‐curve ---
+          let effectiveFlag = 0;
+          if (evalBasis(i, highlightU) > 0) {
+            effectiveFlag = 1;
+          }
         //   ctx.beginPath();
           const N = 400;
           let flag = 0;
@@ -523,11 +527,11 @@ function piecewiseWithPlots(Bs, d) {
             let x = 0;
             let x1 = 0;
             if (globalUmax < 2) {
-                if (highlightEnabled && u + 0.01 * (globalUmax - globalUmin) > highlightU && u - 0.01 * (globalUmax - globalUmin) < highlightU) {
+                if (highlightUEnabled && u + 0.01 * (globalUmax - globalUmin) > highlightU && u - 0.01 * (globalUmax - globalUmin) < highlightU) {
                     ctx.strokeStyle = "red";
                     ctx.lineWidth = 5;
                 } else {
-                    ctx.strokeStyle = "steelblue";
+                    ctx.strokeStyle = effectiveFlag && highlightCPandBFEnabled ? "#FF8800" : (highlightCPandBFEnabled? "lightgray" : "steelblue");
                     ctx.lineWidth = 2;
                 }
                 x = alpha * W;
@@ -535,11 +539,11 @@ function piecewiseWithPlots(Bs, d) {
             } else {
                 u = globalUmin.valueOf() + (globalUmax.valueOf() + 1 -globalUmin.valueOf())*alpha;
                 u1 = globalUmin.valueOf() + (globalUmax.valueOf() + 1 - globalUmin.valueOf())*(j+1)/N;
-                if (highlightEnabled && u + 0.01 * (globalUmax - globalUmin) > highlightU && u - 0.01 * (globalUmax - globalUmin) < highlightU) {
+                if (highlightUEnabled && u + 0.01 * (globalUmax - globalUmin) > highlightU && u - 0.01 * (globalUmax - globalUmin) < highlightU) {
                     ctx.strokeStyle = "red";
                     ctx.lineWidth = 5;
                 } else {
-                    ctx.strokeStyle = "steelblue";
+                    ctx.strokeStyle = effectiveFlag && highlightCPandBFEnabled ? "#FF8800" : (highlightCPandBFEnabled? "lightgray" : "steelblue");
                     ctx.lineWidth = 2;
                 }
                 let old_u = globalUmin.valueOf() + (globalUmax.valueOf() + 1 - globalUmin.valueOf())* (j-1)/N;
@@ -606,7 +610,7 @@ function evalCurve(u) {
 //       if (prev) {
 //         // decide whether this little piece crosses the highlightU
 //         const inSegment =
-//           highlightEnabled && 
+//           highlightUEnabled && 
 //           highlightU + step * 4 >= prev.u &&
 //           highlightU - step * 4 <= u;
         
@@ -638,11 +642,8 @@ function drawBSpline() {
             context.strokeStyle = "blue";
             first = false;
         } else {
-            console.log("u", u);
-            console.log("highlightU", highlightU);
-            console.log("step", step);
 
-            if (highlightEnabled && u > highlightU - step * 4 && u < highlightU + step * 4) {
+            if (highlightUEnabled && u > highlightU - step * 4 && u < highlightU + step * 4) {
                 context.strokeStyle = "red";
                 context.lineWidth = 5;
             } else {
@@ -713,6 +714,8 @@ function updateKnotsAndBasis() {
         slider2.max   = uMax;
         slider2.value = uMin;
         slider2.step  = (uMax - uMin) / 200;
+        highlightU = parseFloat(slider2.value);
+        uDisplay.textContent = highlightU.toFixed(2);
     }
 
     // 2) convert to Rationals
@@ -780,12 +783,12 @@ function onUserKnotChange(evt) {
     Bs = calc_BlendingFunction(U, order);
     uMin = U[order - 1].valueOf();
     uMax = U[U.length - order].valueOf();
-    console.log("uMin", uMin);
-    console.log("uMax", uMax);
     slider2.min   = uMin;
     slider2.max   = uMax;
     slider2.value = uMin;
     slider2.step  = (uMax - uMin) / 200;
+    highlightU = parseFloat(slider2.value);
+    uDisplay.textContent = highlightU.toFixed(2);
     piecewiseWithPlots(Bs, order);
     wrapDraw();
     // update the textual display, in case you want it live
@@ -798,13 +801,20 @@ function onUserKnotChange(evt) {
 function wrapDraw() {
     // 1. Clear the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
-
+    makeEffectiveFlag();
     // 2. Draw each control point
+    let i = 0;
     for (let [x, y] of thePoints) {
         context.beginPath();
         context.arc(x, y, 5, 0, Math.PI * 2);  // radius = 5
-        context.fillStyle = "black";
+        if (effectiveFlag[i] === 1 && highlightCPandBFEnabled) {
+            context.fillStyle = "#FF8800";
+        }
+        else {
+            context.fillStyle = "black";
+        }
         context.fill();
+        i++;
     }
 
     // 3. Draw the B-spline curve
@@ -813,6 +823,18 @@ function wrapDraw() {
 
 function setNumPoints() {
     runcanvas.setupSlider(1, 10, 1);
+}
+
+function makeEffectiveFlag() {
+    for (let i = 0; i < thePoints.length; i++) {
+        let value = evalBasis(i, highlightU);
+        if (value > 0) {
+            effectiveFlag[i] = 1;
+        }
+        else {
+            effectiveFlag[i] = 0;
+        }
+    }
 }
 
 
@@ -828,12 +850,15 @@ let thePoints = [
     [450, 450],
     [450, 150]
 ];
+let effectiveFlag = []; // 1: effective, 0: ineffective
 let highlightU = 0;           // current slider value
-let highlightEnabled = false; // checkbox state
+let highlightUEnabled = false; // checkbox state
+let highlightCPandBFEnabled = false; // checkbox state, whether to highlight control points and blending functions
 // grab the DOM nodes
 const slider2 = document.getElementById("u-slider");
 const uDisplay = document.getElementById("u-value");
-const toggle = document.getElementById("highlight-toggle");
+const toggle1 = document.getElementById("highlight-toggle");
+const toggle2 = document.getElementById("highlight-effective-toggle");
 
 // whenever the slider moves…
 slider2.addEventListener("input", () => {
@@ -844,8 +869,13 @@ slider2.addEventListener("input", () => {
 });
 
 // whenever the checkbox flips…
-toggle.addEventListener("change", () => {
-  highlightEnabled = toggle.checked;
+toggle1.addEventListener("change", () => {
+  highlightUEnabled = toggle1.checked;
+  wrapDraw();
+  updateKnotsAndBasis();
+});
+toggle2.addEventListener("change", () => {
+  highlightCPandBFEnabled = toggle2.checked;
   wrapDraw();
   updateKnotsAndBasis();
 });
@@ -885,6 +915,8 @@ slider2.min   = uMin;
 slider2.max   = uMax;
 slider2.value = uMin;
 slider2.step  = (uMax - uMin) / 200;
+highlightU = parseFloat(slider2.value);
+uDisplay.textContent = highlightU.toFixed(2);
 wrapDraw();
 renderKnotUI();
 
@@ -897,7 +929,7 @@ draggablePoints(canvas, thePoints, () => {
 }, 10, setNumPoints);
 
 slider.onchange = function() {
-    // whenever the user moves the slider…
+    // whenever the user moves the slider to change the degree of the B-spline…
     if (degree !== Number(slider.value)) {
         degree = Number(slider.value);
         order = degree + 1;
@@ -911,6 +943,8 @@ slider.onchange = function() {
         slider2.max   = uMax;
         slider2.value = uMin;
         slider2.step  = (uMax - uMin) / 200;
+        highlightU = parseFloat(slider2.value);
+        uDisplay.textContent = highlightU.toFixed(2);
         updateKnotsAndBasis();
         wrapDraw();
         renderKnotUI();
