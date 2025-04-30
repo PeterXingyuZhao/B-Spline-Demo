@@ -19,7 +19,25 @@
   <body>
     <canvas id="canvas1" height="600px" width="600px"></canvas>
     <!-- somewhere above or beside your canvas -->
-    <label for="u-input">Highlight u:</label>
+    <div id="controls" style="margin-bottom:1em;">
+      <label for="u-slider">u = </label>
+      <input
+        type="range"
+        id="u-slider"
+        min="0"
+        max="1"
+        step="0.01"
+        value="0"
+        style="width: 400px"
+      />
+      <span id="u-value">0.00</span>
+    
+      <label style="margin-left:1em;">
+        <input type="checkbox" id="highlight-toggle" />
+        Highlight the specified u in the graph
+      </label>
+    </div>
+    <!-- <label for="u-input">Highlight u:</label>
 <input
   type="number"
   id="u-input"
@@ -28,7 +46,7 @@
   max="1"
   value="0"
 />
-<button id="u-update">Go</button>
+<button id="u-update">Go</button> -->
 
     <div id="knot-vector-display" style="margin: .5em 0; font-family: monospace;"></div>
     <div id="knot-inputs" style="display: flex; gap: .5em; flex-wrap: wrap;"></div>

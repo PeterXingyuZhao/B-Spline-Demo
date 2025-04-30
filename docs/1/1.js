@@ -512,31 +512,60 @@ function piecewiseWithPlots(Bs, d) {
 
       
           // --- 3. draw the blending‐curve ---
-          ctx.beginPath();
-          const N = 200;
+        //   ctx.beginPath();
+          const N = 400;
           let flag = 0;
-          for (let j = 0; j <= N; j++) {
+          for (let j = 0; j <= N - 1; j++) {
             const alpha = j/N;
+            const alpha1 = (j+1)/N;
             let u = globalUmin.valueOf() + (globalUmax.valueOf()-globalUmin.valueOf())*alpha;
+            let u1 = globalUmin.valueOf() + (globalUmax.valueOf()-globalUmin.valueOf())*(j+1)/N;
             let x = 0;
+            let x1 = 0;
             if (globalUmax < 2) {
+                if (highlightEnabled && u + 0.01 * (globalUmax - globalUmin) > highlightU && u - 0.01 * (globalUmax - globalUmin) < highlightU) {
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 5;
+                } else {
+                    ctx.strokeStyle = "steelblue";
+                    ctx.lineWidth = 2;
+                }
                 x = alpha * W;
+                x1 = (j+1)/N * W;
             } else {
                 u = globalUmin.valueOf() + (globalUmax.valueOf() + 1 -globalUmin.valueOf())*alpha;
+                u1 = globalUmin.valueOf() + (globalUmax.valueOf() + 1 - globalUmin.valueOf())*(j+1)/N;
+                if (highlightEnabled && u + 0.01 * (globalUmax - globalUmin) > highlightU && u - 0.01 * (globalUmax - globalUmin) < highlightU) {
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 5;
+                } else {
+                    ctx.strokeStyle = "steelblue";
+                    ctx.lineWidth = 2;
+                }
                 let old_u = globalUmin.valueOf() + (globalUmax.valueOf() + 1 - globalUmin.valueOf())* (j-1)/N;
-                if(u > umax && old_u <= umax) {
+                if(u1 > umax && u <= umax) {
                     flag = 1;
                 }
                 x = alpha * W;
+                x1 = (j+1)/N * W;
             }
             const b = evalBasis(i, u);
             const y = H - b * H;
-            if (j === 0 || flag === 1) ctx.moveTo(x,y);
-            else         ctx.lineTo(x,y);
+            const y1 = H - evalBasis(i, u1) * H;
+            // if (j === 0 || flag === 1) ctx.moveTo(x,y);
+            // else         ctx.lineTo(x,y);
+            if(flag === 1) {
+                flag = 0;
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+            }
           }
-          ctx.strokeStyle = "steelblue";
-          ctx.lineWidth   = 2;
-          ctx.stroke();
+        //   ctx.strokeStyle = "steelblue";
+        //   ctx.lineWidth   = 2;
+        //   ctx.stroke();
         });
       });
       
@@ -566,25 +595,87 @@ function evalCurve(u) {
 }
 
 // 4. Draw the curve inside wrapDraw (after drawing control points)
+// function drawBSpline() {
+//     uMin = U[order - 1].valueOf();
+//     uMax = U[U.length - order].valueOf();
+//     const step = (uMax - uMin) / 400;
+//     let prev = null;    // { u, x, y }
+    
+//     for (let u = uMin; u <= uMax + 1e-9; u += step) {
+//       const [x, y] = evalCurve(u);
+//       if (prev) {
+//         // decide whether this little piece crosses the highlightU
+//         const inSegment =
+//           highlightEnabled && 
+//           highlightU + step * 4 >= prev.u &&
+//           highlightU - step * 4 <= u;
+        
+//         // draw that tiny piece
+//         context.beginPath();
+//         context.moveTo(prev.x, prev.y);
+//         context.lineTo(x, y);
+//         context.strokeStyle = inSegment ? "red" : "#0000AA";
+//         context.lineWidth   = inSegment ? 5 : 2;
+//         context.stroke();
+//       }
+//       prev = { u, x, y };
+//     }
+//   }
+
 function drawBSpline() {
     uMin = U[order - 1].valueOf();
     uMax = U[U.length - order].valueOf();
-    const step = (uMax - uMin) / 200;
+    const step = (uMax - uMin) / 400;
     let first = true;
-    context?.beginPath();
-    for (let u = uMin; u <= uMax; u += step) {
+    
+    for (let u = uMin; u <= uMax - step; u += step) {
         const [x, y] = evalCurve(u);
+        const [x1, y1] = evalCurve(u + step);
         if (first) {
+            context?.beginPath();
             context.moveTo(x, y);
+            context.lineTo(x1, y1);
+            context.strokeStyle = "blue";
             first = false;
         } else {
+            console.log("u", u);
+            console.log("highlightU", highlightU);
+            console.log("step", step);
+
+            if (highlightEnabled && u > highlightU - step * 4 && u < highlightU + step * 4) {
+                context.strokeStyle = "red";
+                context.lineWidth = 5;
+            } else {
+                context.strokeStyle = "blue";
+                context.lineWidth = 2;
+            }
+            context?.beginPath();
+            context.lineTo(x1, y1);
             context.lineTo(x, y);
         }
+        context.stroke();
     }
-    context.strokeStyle = "blue";
-    context.lineWidth = 2;
-    context.stroke();
 }
+  
+// function drawBSpline() {
+//     uMin = U[order - 1].valueOf();
+//     uMax = U[U.length - order].valueOf();
+//     const step = (uMax - uMin) / 200;
+//     let first = true;
+//     context?.beginPath();
+//     for (let u = uMin; u <= uMax; u += step) {
+//         const [x, y] = evalCurve(u);
+//         if (first) {
+//             context.moveTo(x, y);
+//             first = false;
+//         } else {
+//             context.lineTo(x, y);
+//         }
+//     }
+//     context.strokeStyle = "blue";
+//     context.lineWidth = 2;
+//     context.stroke();
+// }
 
 /**
  * Build a clamped, uniform knot vector for a B-spline
@@ -614,8 +705,15 @@ function updateKnotsAndBasis() {
     if (num_points !== thePoints.length) {
         knot_vectors = makeOpenUniformKnots(thePoints.length, order);
         num_points = thePoints.length;
+        U = knot_vectors.map(toRational);
+        Bs = calc_BlendingFunction(U, order);
+        uMin = U[order - 1].valueOf();
+        uMax = U[U.length - order].valueOf();
+        slider2.min   = uMin;
+        slider2.max   = uMax;
+        slider2.value = uMin;
+        slider2.step  = (uMax - uMin) / 200;
     }
-    console.log("knot_vectors", knot_vectors);
 
     // 2) convert to Rationals
     U = knot_vectors.map(toRational);
@@ -680,6 +778,14 @@ function onUserKnotChange(evt) {
     knot_vectors[idx] = val;
     U  = knot_vectors.map(toRational);
     Bs = calc_BlendingFunction(U, order);
+    uMin = U[order - 1].valueOf();
+    uMax = U[U.length - order].valueOf();
+    console.log("uMin", uMin);
+    console.log("uMax", uMax);
+    slider2.min   = uMin;
+    slider2.max   = uMax;
+    slider2.value = uMin;
+    slider2.step  = (uMax - uMin) / 200;
     piecewiseWithPlots(Bs, order);
     wrapDraw();
     // update the textual display, in case you want it live
@@ -722,6 +828,28 @@ let thePoints = [
     [450, 450],
     [450, 150]
 ];
+let highlightU = 0;           // current slider value
+let highlightEnabled = false; // checkbox state
+// grab the DOM nodes
+const slider2 = document.getElementById("u-slider");
+const uDisplay = document.getElementById("u-value");
+const toggle = document.getElementById("highlight-toggle");
+
+// whenever the slider moves…
+slider2.addEventListener("input", () => {
+  highlightU = parseFloat(slider2.value);
+  uDisplay.textContent = highlightU.toFixed(2);
+  wrapDraw();
+  updateKnotsAndBasis();
+});
+
+// whenever the checkbox flips…
+toggle.addEventListener("change", () => {
+  highlightEnabled = toggle.checked;
+  wrapDraw();
+  updateKnotsAndBasis();
+});
+  
 let num_points = thePoints.length;
 // let knot_vectors = [0, 1, 2, 3, 4, 5];
 let knot_vectors = [0, 0, 1, 2, 3, 3];
@@ -742,7 +870,6 @@ runcanvas.digits = 0;
 
 
 let slider = runcanvas.range;
-console.log(Number(slider.value));
 degree = Number(slider.value);
 order = degree + 1;
 thePoints = makeDefaultControlPoints(order)
@@ -754,6 +881,10 @@ Bs = calc_BlendingFunction(U, order);
 // 1. Determine the active u-range
 uMin = U[order - 1].valueOf();
 uMax = U[U.length - order].valueOf();
+slider2.min   = uMin;
+slider2.max   = uMax;
+slider2.value = uMin;
+slider2.step  = (uMax - uMin) / 200;
 wrapDraw();
 renderKnotUI();
 
@@ -772,18 +903,20 @@ slider.onchange = function() {
         order = degree + 1;
         thePoints = makeDefaultControlPoints(order);
         knot_vectors = makeOpenUniformKnots(thePoints.length, order);
-        console.log("knot_vectors", knot_vectors);
         U = knot_vectors.map(toRational);
         Bs = calc_BlendingFunction(U, order);
         uMin = U[order - 1].valueOf();
         uMax = U[U.length - order].valueOf();
+        slider2.min   = uMin;
+        slider2.max   = uMax;
+        slider2.value = uMin;
+        slider2.step  = (uMax - uMin) / 200;
         updateKnotsAndBasis();
         wrapDraw();
         renderKnotUI();
         draggablePoints(canvas, thePoints, () => {
             // whenever the user adds or drags a point…
             updateKnotsAndBasis();
-            console.log("peter!")
             wrapDraw();
             renderKnotUI();
             setNumPoints();
