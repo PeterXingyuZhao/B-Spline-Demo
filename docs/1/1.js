@@ -409,31 +409,137 @@ function piecewiseWithPlots(Bs, d) {
     });
   
     // 4. Typeset everything, then draw plots
+    // MathJax.typesetPromise().then(() => {
+    //   rows.forEach(({ canvas, i, umin, umax }) => {
+    //     const ctx = canvas.getContext("2d");
+    //     ctx.clearRect(0,0,canvas.width,canvas.height);
+    //     ctx.beginPath();
+  
+    //     const N = 200;
+    //     for (let j=0; j<=N; j++) {
+    //     //   const u = umin + (umax-umin)*(j/N);
+    //         const u = globalUmin.valueOf() + (globalUmax.valueOf()-globalUmin.valueOf())*(j/N);
+    //       const b = evalBasis(i, u);
+    //       // map (u,b) → (x,y) in pixel coords
+    //     //   const x = (u-umin)/(umax-umin)*canvas.width;
+    //         const x = (u-globalUmin.valueOf())/(globalUmax.valueOf()-globalUmin.valueOf())*canvas.width;
+    //       // flip y (we want b=0 at bottom)
+    //       const y = canvas.height - b*canvas.height;
+    //       if (j===0) ctx.moveTo(x,y);
+    //       else       ctx.lineTo(x,y);
+    //     }
+  
+    //     ctx.strokeStyle = "steelblue";
+    //     ctx.lineWidth = 2;
+    //     ctx.stroke();
+    //   });
+    // });
     MathJax.typesetPromise().then(() => {
-      rows.forEach(({ canvas, i, umin, umax }) => {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.beginPath();
-  
-        const N = 200;
-        for (let j=0; j<=N; j++) {
-        //   const u = umin + (umax-umin)*(j/N);
-            const u = globalUmin.valueOf() + (globalUmax.valueOf()-globalUmin.valueOf())*(j/N);
-          const b = evalBasis(i, u);
-          // map (u,b) → (x,y) in pixel coords
-        //   const x = (u-umin)/(umax-umin)*canvas.width;
-            const x = (u-globalUmin.valueOf())/(globalUmax.valueOf()-globalUmin.valueOf())*canvas.width;
-          // flip y (we want b=0 at bottom)
-          const y = canvas.height - b*canvas.height;
-          if (j===0) ctx.moveTo(x,y);
-          else       ctx.lineTo(x,y);
-        }
-  
-        ctx.strokeStyle = "steelblue";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        rows.forEach(({ canvas, i, umin, umax }) => {
+          const ctx = canvas.getContext("2d");
+          const W  = canvas.width, H = canvas.height;
+          ctx.clearRect(0,0,W,H);
+      
+          // 1. Draw the axes
+            ctx.beginPath();
+            ctx.strokeStyle = "black";
+            ctx.lineWidth   = 1;
+            ctx.moveTo(0, H);     // x-axis
+            ctx.lineTo(W, H);
+            ctx.moveTo(0, 0);     // y-axis
+            ctx.lineTo(0, H);
+            ctx.stroke();
+
+            // --- 2. draw ticks & labels ---
+            let numXTicks = globalUmax + 1, numYTicks = 2;
+            if (numXTicks > 10) {
+                numXTicks = 10;
+            }
+            if (numXTicks < 2) {
+                numXTicks = 2;
+            }
+
+            // make sure text is visible
+            ctx.fillStyle    = "black";
+            ctx.strokeStyle  = "black";
+            ctx.font         = "10px sans-serif";
+
+            // — x-ticks & labels —
+            ctx.textAlign    = "center";
+            ctx.textBaseline = "top";
+            for (let t = 0; t <= numXTicks; t++) {
+                const α    = t/numXTicks;
+                const x_px = α * W;
+                let u_val = 0;
+                if(globalUmax < 2) {
+                    u_val = globalUmin + α*(globalUmax - globalUmin);
+                } else {
+                    u_val = globalUmin + α*(numXTicks - globalUmin);
+                }
+
+                // tick
+                ctx.beginPath();
+                ctx.moveTo(x_px, H);
+                ctx.lineTo(x_px, H-6);
+                ctx.stroke();
+
+                // label (slightly inside the bottom border)
+                if (globalUmax < 2) {
+                    ctx.fillText(u_val.toFixed(1), x_px + 2, H - 6 - 4);
+                }
+                else {
+                    ctx.fillText(u_val.toFixed(0), x_px + 3, H - 6 - 4);
+                }
+            }
+
+            // — y-ticks & labels —
+            ctx.textAlign    = "right";
+            ctx.textBaseline = "middle";
+            for (let t = 0; t <= numYTicks; t++) {
+                const β    = t/numYTicks,
+                        y_px = H - β*H,
+                        bVal = β;            // 0..1
+
+                // tick
+                ctx.beginPath();
+                ctx.moveTo(0, y_px);
+                ctx.lineTo(6, y_px);
+                ctx.stroke();
+
+                // label (pulled in 2px from the left edge)
+                ctx.fillText(bVal.toFixed(1), 6 + 8, y_px + 8);
+            }
+
+      
+          // --- 3. draw the blending‐curve ---
+          ctx.beginPath();
+          const N = 200;
+          let flag = 0;
+          for (let j = 0; j <= N; j++) {
+            const alpha = j/N;
+            let u = globalUmin.valueOf() + (globalUmax.valueOf()-globalUmin.valueOf())*alpha;
+            let x = 0;
+            if (globalUmax < 2) {
+                x = alpha * W;
+            } else {
+                u = globalUmin.valueOf() + (globalUmax.valueOf() + 1 -globalUmin.valueOf())*alpha;
+                let old_u = globalUmin.valueOf() + (globalUmax.valueOf() + 1 - globalUmin.valueOf())* (j-1)/N;
+                if(u > umax && old_u <= umax) {
+                    flag = 1;
+                }
+                x = alpha * W;
+            }
+            const b = evalBasis(i, u);
+            const y = H - b * H;
+            if (j === 0 || flag === 1) ctx.moveTo(x,y);
+            else         ctx.lineTo(x,y);
+          }
+          ctx.strokeStyle = "steelblue";
+          ctx.lineWidth   = 2;
+          ctx.stroke();
+        });
       });
-    });
+      
 }
   
   
@@ -671,6 +777,7 @@ slider.onchange = function() {
         Bs = calc_BlendingFunction(U, order);
         uMin = U[order - 1].valueOf();
         uMax = U[U.length - order].valueOf();
+        updateKnotsAndBasis();
         wrapDraw();
         renderKnotUI();
         draggablePoints(canvas, thePoints, () => {
@@ -678,6 +785,7 @@ slider.onchange = function() {
             updateKnotsAndBasis();
             console.log("peter!")
             wrapDraw();
+            renderKnotUI();
             setNumPoints();
         }, 10, setNumPoints);
     }
