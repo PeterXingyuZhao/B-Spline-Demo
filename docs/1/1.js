@@ -395,8 +395,8 @@ function piecewiseWithPlots(Bs, d) {
         mathDiv.style.minWidth = "600px";
         mathDiv.style.maxWidth = "600px";
       } else {
-        mathDiv.style.minWidth = "1000px";
-        mathDiv.style.maxWidth = "1000px";
+        mathDiv.style.minWidth = "800px";
+        mathDiv.style.maxWidth = "800px";
       }
 
       mathDiv.innerHTML = tex;
