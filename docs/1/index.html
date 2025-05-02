@@ -31,13 +31,90 @@
         flex: 0 0 200px;          /* fixed 200px sidebar */
         /* or use flex: 1; for a fluid width */
       }
+      .content {
+        flex: 1;                   /* take up the rest of the space */
+        padding: 0 1em;            /* optional inner padding */
+      }
       #canvasAndControls {
         flex: 1;                  /* take up remaining space */
       }
+      /* in style559.css (or in a <style> block) */
+    .centered-img {
+      display: block;
+      margin: 0 auto;
+      /* width: 50%; height: auto;  ← if you still want to constrain its size */
+    }
+
     </style>    
   </head>
+  <body>
 
-  <div id="main">
+    <div id="main">
+      <!-- 1) sidebar lives here -->
+      <aside class="sidebar">
+        <h2 class="Side_Title">Portfolio 4:<br/>B-Spline Demo</h2>
+        <p class="Side__Note">Pages:</p>
+        <ul class="Side__List">
+          <li class="Side__Item"><a href="../../">Index</a></li>
+          <li class="Side__Item Side__Selected">1: B-Spline 101</li>
+          <li class="Side__Item Side__Selected"><a href="../2/">2: B-Spline Demo</a></li>
+        </ul>
+      </aside>
+  
+      <!-- 2) content is *inside* the same flex container -->
+      <section class="content">
+        <h1>B-Spline 101 (Some Important Things to Know About B-Splines)</h1>
+  <p></p>
+  <p>There are four key concepts about every B-Spline curve--the degree, control points, blending functions, and knot vectors.</p>
+  <p>The <b>degree</b> of a spline curve is the degree of the polynomials that define the curve segments. The <b>order</b>, $d$ (confusingly), is one greater than the degree. So, for example, if we want a spline based on cubic polynomials then the order will be 4 while the degree is 3.</p>
+  <p>There are $n + 1$ <b>control points</b>, $p_0,...,p_n$. At any given point on the curve, only some local control points will influence the curve. Specifically, the order of the curve is equal to the number of control points affecting any point on the curve.</p>
+  <p>A <b>knot vector</b> is a a non-decreasing sequence of real numbers called <em>knots</em>. So if the knot vector is $(u_0,u_1,...,u_m)$ then $u_i\leq u_{i+1}, 0\leq i \lt m$. As we'll shortly see in the Cox-de Boor recursions, the knot vector partitions the parameter domain (the range of $u$) and controls how the piecewise polynomial blending functions are defined and joined together. </p>
+  <h2>How to Compute A B-Spline Curve?</h2>
+  <p>The <b>definition</b> of a B-Spline curve is given by:</p>
+
+      $$P(u) \;=\; \sum_{k=0}^n p_k\,B_{k,d}(u)$$
+
+      <p>
+        where <em>d</em> is the order of the curve and the <b>blending functions</b>
+        $B_{k,d}(u)$ are defined by the recursive Cox–de Boor equations:
+      </p>
+
+      $$ 
+      B_{k,1}(u)
+      = 
+      \begin{cases}
+        1 & \text{if } u_k \le u \le u_{k+1},\\
+        0 & \text{otherwise},
+      \end{cases}
+      $$
+
+      $$
+      B_{k,d}(u)
+      = 
+      \frac{u - u_k}{u_{k+d-1} - u_k}\;B_{k,d-1}(u)
+      \;+\;
+      \frac{u_{k+d} - u}{u_{k+d} - u_{k+1}}\;B_{k+1,d-1}(u),
+      \quad d > 1.
+      $$
+
+   <p>It is useful to look at the recursion tree to get a better understanding of the formula. In the following example, the tree corresponds to a four control point cubic B-Spline. It shows the four control points, together with their respective weights, i.e. the blending functions, at the top. At the bottom it shows the knot ranges where each $B_{1}$ is defined.</p>
+  <img src="image.png"
+  alt="recursion tree"
+  class="centered-img"
+  style="width: 60%; height: auto;"/>
+  <p>For this tree the generated curve will be in the parameter range $u_3\leq u\leq u_4$, since this is the only parameter range where all four $(d=4)$ of the control points have influence.</p>
+  <footer style="font-size:0.9em; margin-top:2em; border-top:1px solid #ccc; padding-top:1em;">
+    <p>
+      Content on “B-Spline 101” adapted from
+      <a href="https://www.cs.montana.edu/courses/spring2009/525/dslectures/CoxdeBoor.pdf" target="_blank" rel="noopener">
+        “Cox-deBoor Equations for B-Splines” by Denbigh Starkey
+      </a> and <em>Fundamentals of Computer Graphics, Chapter 15</em>, by Michael Gleicher.
+    </p>
+  </footer>
+      </section>
+    </div>
+
+  <!-- <div id="main">
     <div class="sidebar">
       <h2 class="Side_Title">Portfolio 4: <br/>B-Spline Demo</h2>
       <p class="Side__Note">Pages:</p>
@@ -46,78 +123,58 @@
         <li class="Side__Item Side__Selected">1: B-Spline Demo</li>
       </ul>
     </div>
+  </div> -->
+<!-- 
+  <div class="content">
+    <h1>B-Spline 101 (Some Important Things to Know About B-Splines)</h1>
+  <p></p>
+  <p>There are four key concepts about every B-Spline curve--the degree, control points, blending functions, and knot vectors.</p>
+  <p>The <b>degree</b> of a spline curve is the degree of the polynomials that define the curve segments. The <b>order</b>, $d$ (confusingly), is one greater than the degree. So, for example, if we want a spline based on cubic polynomials then the order will be 4 while the degree is 3.</p>
+  <p>There are $n + 1$ <b>control points</b>, $p_0,...,p_n$. At any given point on the curve, only some local control points will influence the curve. Specifically, the order of the curve is equal to the number of control points affecting any point on the curve.</p>
+  <p>A <b>knot vector</b> is a a non-decreasing sequence of real numbers called <em>knots</em>. So if the knot vector is $(u_0,u_1,...,u_m)$ then $u_i\leq u_{i+1}, 0\leq i \lt m$. As we'll shortly see in the Cox-de Boor recursions, the knot vector partitions the parameter domain (the range of $u$) and controls how the piecewise polynomial blending functions are defined and joined together. </p>
+  <h2>How to Compute A B-Spline Curve?</h2>
+  <p>The <b>definition</b> of a B-Spline curve is given by:</p>
 
-    <div id="canvasAndControls">
-      <canvas id="canvas1" height="600" width="1000"></canvas>
+      $$P(u) \;=\; \sum_{k=0}^n p_k\,B_{k,d}(u)$$
 
-      <div id = "degreeControls" style="margin-bottom:1em;">
-        <label for="degree-slider">degree = </label>
-        <input
-          type="text"
-          id="degree-value"
-          value="1"
-          readonly
-          style="width: 3em; text-align: center;"
-        />
-        <input
-          type="range"
-          id="degree-slider"
-          min="1"
-          max="10"
-          step="1"
-          value="1"
-          style="width: 400px"
-        />
-        This is the degree of the B-spline, i.e. the degree of the polynomial blending functions used.
-       </div>
-      <div id="highlightControls" style="margin-bottom:1em;">
-        <label for="u-slider">u = </label>
-        <!-- <span id="u-value">0.00</span> -->
-        <input
-          type="text"
-          id="u-value"
-          value="0.00"
-          readonly
-          style="width: 3em; text-align: center;"
-        />
-        <input
-          type="range"
-          id="u-slider"
-          min="0"
-          max="1"
-          step="0.01"
-          value="0"
-          style="width: 400px"
-        />
-        
-      
-        <label style="margin-left:1em;">
-          <input type="checkbox" id="highlight-toggle" />
-          Highlight the specified u in the graph
-          <input type="checkbox" id="highlight-effective-toggle" />
-          Highlight the effective control points and blending functions
-        </label>
-      </div>
-      <!-- <label for="u-input">Highlight u:</label>
-  <input
-    type="number"
-    id="u-input"
-    step="any"
-    min="0"
-    max="1"
-    value="0"
-  />
-  <button id="u-update">Go</button> -->
-  
-      <div id="knot-vector-display" style="margin: .5em 0; font-family: monospace;"></div>
-      <div id="knot-inputs" style="display: flex; gap: .5em; flex-wrap: wrap;"></div>
-      <br />
-      <script src="1.js" type="module" defer></script>
-      <div id="blend-formulas"></div>
-    </div>
-  </div>
+      <p>
+        where <em>d</em> is the order of the curve and the <b>blending functions</b>
+        $B_{k,d}(u)$ are defined by the recursive Cox–de Boor equations:
+      </p>
 
-  <script src="1.js" type="module"></script>
+      $$ 
+      B_{k,1}(u)
+      = 
+      \begin{cases}
+        1 & \text{if } u_k \le u \le u_{k+1},\\
+        0 & \text{otherwise},
+      \end{cases}
+      $$
+
+      $$
+      B_{k,d}(u)
+      = 
+      \frac{u - u_k}{u_{k+d-1} - u_k}\;B_{k,d-1}(u)
+      \;+\;
+      \frac{u_{k+d} - u}{u_{k+d} - u_{k+1}}\;B_{k+1,d-1}(u),
+      \quad d > 1.
+      $$
+
+   <p>It is useful to look at the recursion tree to get a better understanding of the formula. In the following example, the tree corresponds to a four control point cubic B-Spline. It shows the four control points, together with their respective weights, i.e. the blending functions, at the top. At the bottom it shows the knot ranges where each $B_{1}$ is defined.</p>
+  <img src="image.png"
+  alt="recursion tree"
+  class="centered-img"
+  style="width: 50%; height: auto;"/>
+  <p>For this tree the generated curve will be in the parameter range $u_3\leq u\leq u_4$, since this is the only parameter range where all four $(d=4)$ of the control points have influence.</p>
+  <footer style="font-size:0.9em; margin-top:2em; border-top:1px solid #ccc; padding-top:1em;">
+    <p>
+      Content on “B-Spline 101” adapted from
+      <a href="https://www.cs.montana.edu/courses/spring2009/525/dslectures/CoxdeBoor.pdf" target="_blank" rel="noopener">
+        “Cox-deBoor Equations for B-Splines” by Denbigh Starkey
+      </a> and <em>Fundamentals of Computer Graphics</em>.
+    </p>
+  </footer>
+  </div> -->
 </body>
 </html>
 
