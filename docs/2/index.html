@@ -21,19 +21,26 @@
       }
       /* make the outer container a row */
       #main {
-      display: flex;
-      flex-direction: row-reverse; /* ← swap the order */
-      align-items: flex-start;
-      gap: 1em;
-    }
+        display: flex;
+        /* flex-direction: row-reverse;  */
+        align-items: flex-start;
+        gap: 1em;
+        overflow-x: auto;
+      }
 
       .sidebar {
         flex: 0 0 200px;          /* fixed 200px sidebar */
-        /* or use flex: 1; for a fluid width */
+        order: 1;
       }
       #canvasAndControls {
-        flex: 1;                  /* take up remaining space */
+        /* flex: 0 0 auto;
+        order: 0;         */
+        flex: 1 1 auto;   /* take up remaining space, but do shrink when needed */
+        min-width: 0;     /* allow it to go below its children's intrinsic width */
       }
+      /* #canvasAndControls {
+        flex: 1;                  
+      } */
     </style>    
   </head>
 

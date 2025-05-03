@@ -21,22 +21,24 @@
       }
       /* make the outer container a row */
       #main {
-      display: flex;
-      flex-direction: row-reverse; /* ← swap the order */
-      align-items: flex-start;
-      gap: 1em;
-    }
+        display: flex;
+        /* flex-direction: row-reverse; */
+        align-items: flex-start;
+        gap: 1em;
+        overflow-x: auto;
+      }
 
       .sidebar {
         flex: 0 0 200px;          /* fixed 200px sidebar */
-        /* or use flex: 1; for a fluid width */
+        order: 1;
       }
       .content {
         flex: 1;                   /* take up the rest of the space */
         padding: 0 1em;            /* optional inner padding */
       }
       #canvasAndControls {
-        flex: 1;                  /* take up remaining space */
+        flex: 1;
+        order: 0;
       }
       /* in style559.css (or in a <style> block) */
     .centered-img {
@@ -69,7 +71,7 @@
   <p>The <b>degree</b> of a spline curve is the degree of the polynomials that define the curve segments. The <b>order</b>, $d$ (confusingly), is one greater than the degree. So, for example, if we want a spline based on cubic polynomials then the order will be 4 while the degree is 3.</p>
   <p>There are $n + 1$ <b>control points</b>, $p_0,...,p_n$. At any given point on the curve, only some local control points will influence the curve. Specifically, the order of the curve is equal to the number of control points affecting any point on the curve.</p>
   <p>A <b>knot vector</b> is a a non-decreasing sequence of real numbers called <em>knots</em>. So if the knot vector is $(u_0,u_1,...,u_m)$ then $u_i\leq u_{i+1}, 0\leq i \lt m$. As we'll shortly see in the Cox-de Boor recursions, the knot vector partitions the parameter domain (the range of $u$) and controls how the piecewise polynomial blending functions are defined and joined together. </p>
-  <h2>How to Compute A B-Spline Curve?</h2>
+  <h3>How to Compute A B-Spline Curve?</h3>
   <p>The <b>definition</b> of a B-Spline curve is given by:</p>
 
       $$P(u) \;=\; \sum_{k=0}^n p_k\,B_{k,d}(u)$$
